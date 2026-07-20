@@ -1,0 +1,8 @@
+﻿Готовый PDF (2 стр. A4):
+C:\Users\Admin\workspace\document_a4_ballot_duk_35.pdf
+
+Также:
+C:\Users\Admin\workspace\photo-document-outputs\document_a4_ballot_duk_35.pdf
+D:\ai-stack\apps\photo-document-to-a4\outputs\document_a4_ballot_duk_35.pdf
+
+Собственник: Дук Виталий Константинович, кв. 35, отметки «за».

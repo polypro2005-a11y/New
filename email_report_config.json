@@ -1,0 +1,26 @@
+{
+  "gmail": {
+    "email": "polypro2005@gmail.com",
+    "app_password": "ekhl kyhv kzcj tuzd",
+    "imap_server": "imap.gmail.com",
+    "imap_port": 993
+  },
+  "telegram": {
+    "bot_token": "8565482614:AAEpaaNHZWKdaA_kXb0IIutDG68LwEhsjz8",
+    "chat_id": "399206404"
+  },
+  "search": {
+    "filename_keyword": "анализ",
+    "file_extensions": [".xlsx", ".xls", ".xlsb"],
+    "max_emails_to_check": 20
+  },
+  "schedule": {
+    "time": "09:00",
+    "timezone": "Europe/Moscow"
+  },
+  "report": {
+    "max_rows": 50,
+    "include_all_sheets": true,
+    "title": "📊 Ежедневный отчёт из Excel"
+  }
+}

@@ -1,0 +1,13 @@
+[2026-07-20 21:51:15] 🤖 Polling started
+[2026-07-20 21:51:15] 📢 Chat ID: 399206404 | allowed_uid: (any)
+[2026-07-20 21:52:08] 🤖 Polling started
+[2026-07-20 21:52:08] 📢 Chat ID: 399206404 | allowed_uid: (any)
+[2026-07-20 21:57:00] callback from=399206404 data=status
+[2026-07-20 21:57:01] _handle_status start
+[2026-07-20 21:57:01] _handle_status: sending reply (232 chars)
+[2026-07-20 21:57:01] _handle_status done
+[2026-07-20 21:57:01] handled: status
+[2026-07-20 21:57:14] callback from=399206404 data=check_now
+[2026-07-20 21:57:14] check_now: started
+[2026-07-20 21:57:19] check_now: done
+[2026-07-20 21:57:19] handled: check_now

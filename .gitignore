@@ -1,0 +1,15 @@
+# Generated files
+.bot_lock
+.bot_polling.log
+.last_report.txt
+reports/
+
+# Debug/helper scripts
+debug_*.py
+check_*.py
+*.bat
+ГОТОВЫЙ_ДОКУМЕНТ.txt
+
+# Python cache
+__pycache__/
+*.pyc

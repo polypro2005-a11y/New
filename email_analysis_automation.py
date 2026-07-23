@@ -485,13 +485,13 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
         pw = 7
 
     code_lines = []
-    code_lines.append(f"{'материал'.ljust(lw)}{'текущее'.rjust(pw)} прогноз<code>&lt;/&gt;</code>")
+    code_lines.append(f"<b>{'материал'.ljust(lw)}</b>{'текущее'.rjust(pw)} прогноз<code>&lt;/&gt;</code>")
 
     # Гранула per-line
     for i in range(5):
         cv = int(gc_arr[i]) if gc_arr[i] else 0
         pv = int(gp_arr[i]) if gp_arr[i] else 0
-        code_lines.append(f"{granula_names[i].ljust(lw)}{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<b>{granula_names[i].ljust(lw)}</b>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
 
     # Гранула subtotal
     code_lines.append(f"<b>{'Гранула'.ljust(lw)}</b>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}")
@@ -500,7 +500,7 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     for i in range(4):
         cv = int(pc_arr[i]) if pc_arr[i] else 0
         pv = int(pp_arr[i]) if pp_arr[i] else 0
-        code_lines.append(f"{polu_names[i].ljust(lw)}{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<b>{polu_names[i].ljust(lw)}</b>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
 
     # Полуфабрикат subtotal
     code_lines.append(f"<b>{'П/фабрикат'.ljust(lw)}</b>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}")

@@ -275,47 +275,57 @@ def find_total_row(rows, kg_col, title_keywords):
 
 
 def extract_forecast(sheets_data):
-    """Извлекает данные прогноза."""
+    """Извлекает данные прогноза по каждой единице (per-column)."""
     прогноз_rows = sheets_data.get("прогноз", [])
-    granula_cur = 0
-    granula_prog = 0
-    polu_cur = 0
-    polu_prog = 0
+
+    granula_cur = [0.0] * 5
+    granula_prog = [0.0] * 5
+    polu_cur = [0.0] * 4
+    polu_prog = [0.0] * 4
     peregon = 0
 
     for row in прогноз_rows:
         if not row:
             continue
         first = str(row[0]).strip().lower() if row[0] else ""
-        if first == "текущее" and len(row) > 2:
-            for i in range(2, min(7, len(row))):
-                try:
-                    granula_cur += float(str(row[i]))
-                except:
-                    pass
-            for i in range(7, min(11, len(row))):
-                try:
-                    polu_cur += float(str(row[i]))
-                except:
-                    pass
-        elif first == "прогноз" and len(row) > 2:
-            for i in range(2, min(7, len(row))):
-                try:
-                    granula_prog += float(str(row[i]))
-                except:
-                    pass
-            for i in range(7, min(11, len(row))):
-                try:
-                    polu_prog += float(str(row[i]))
-                except:
-                    pass
+
+        if first == "текущее":
+            for i in range(5):
+                col = i + 2
+                if len(row) > col and row[col]:
+                    try:
+                        granula_cur[i] = float(str(row[col]))
+                    except:
+                        pass
+            for i in range(4):
+                col = i + 7
+                if len(row) > col and row[col]:
+                    try:
+                        polu_cur[i] = float(str(row[col]))
+                    except:
+                        pass
+
+        elif first == "прогноз":
+            for i in range(5):
+                col = i + 2
+                if len(row) > col and row[col]:
+                    try:
+                        granula_prog[i] = float(str(row[col]))
+                    except:
+                        pass
+            for i in range(4):
+                col = i + 7
+                if len(row) > col and row[col]:
+                    try:
+                        polu_prog[i] = float(str(row[col]))
+                    except:
+                        pass
 
     for row in прогноз_rows:
         if not row or not row[0]:
             continue
         first = str(row[0]).strip().lower()
         if "перегон" in first and len(row) > 1:
-            # Перегон — берём значение из колонки 1 (текущее)
             try:
                 v = float(str(row[1]))
                 peregon = int(v)
@@ -323,7 +333,13 @@ def extract_forecast(sheets_data):
                 peregon = 0
             break
 
-    return granula_cur, granula_prog, polu_cur, polu_prog, peregon
+    return {
+        "granula_cur": granula_cur,
+        "granula_prog": granula_prog,
+        "polu_cur": polu_cur,
+        "polu_prog": polu_prog,
+        "peregon": peregon
+    }
 
 
 def get_kg_col_for_sheet(name):
@@ -344,7 +360,11 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     """
     Генерирует отчёт для одной даты.
     """
-    granula_cur, granula_prog, polu_cur, polu_prog, peregon = forecast_data
+    gc_arr = forecast_data["granula_cur"]
+    gp_arr = forecast_data["granula_prog"]
+    pc_arr = forecast_data["polu_cur"]
+    pp_arr = forecast_data["polu_prog"]
+    peregon = forecast_data["peregon"]
 
     # Дата отчёта
     report_date = excel_serial_to_date(target_date_serial)
@@ -435,21 +455,59 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     # ── ПРОГНОЗ ──
     lines.append("📊 <b>ПРОГНОЗ НА МЕСЯЦ</b>")
     # 「Полуфабрикат」(12) сокращаю до「П/фабрикат」(10) чтобы влезть в 25 символов
-    lw = max(len('материал'), len('Гранула'), len('П/фабрикат'), len('Перегон'))
+    granula_names = ["Э-1", "Э-2", "Э-3", "Э-4", "Э-5"]
+    polu_names = ["Ш-1", "Ш-2", "мойка Н", "мойка Т"]
+
+    # Totals
+    gc_total = int(sum(gc_arr))
+    gp_total = int(sum(gp_arr))
+    pc_total = int(sum(pc_arr))
+    pp_total = int(sum(pp_arr))
+
+    # Max widths
+    lw = max(len("материал"),
+             max(len(n) for n in granula_names),
+             max(len(n) for n in polu_names),
+             len("Гранула"), len("П/фабрикат"), len("Перегон"))
+
+    # Num widths
+    all_nums = []
+    for i in range(5):
+        all_nums += [int(gc_arr[i]), int(gp_arr[i])]
+    for i in range(4):
+        all_nums += [int(pc_arr[i]), int(pp_arr[i])]
+    all_nums += [gc_total, gp_total, pc_total, pp_total, peregon]
+
     nw = max(len("текущее"), len("прогноз"),
-             max(len(str(int(x))) for x in [granula_cur, granula_prog, polu_cur, polu_prog, peregon]))
+             max(len(str(x)) for x in all_nums))
     pw = nw
-    # Cap total at 25: lw(10) + pw + 1 + pw <= 25 → pw <= 7
-    # "текущее"(7) и "прогноз"(7) требуют pw >= 7
-    # Самые длинные числа: granula_cur=980880(6), granula_prog=1600383(7)
     if pw + lw + 1 + pw > 25:
-        pw = 7  # pw=7, total=10+7+1+7=25 ✅
+        pw = 7
 
     code_lines = []
     code_lines.append(f"{'материал'.ljust(lw)}{'текущее'.rjust(pw)} прогноз<code>&lt;/&gt;</code>")
-    code_lines.append(f"<b>{'Гранула'.ljust(lw)}</b>{str(int(granula_cur)).rjust(pw)} {str(int(granula_prog)).rjust(pw)}")
-    code_lines.append(f"<b>{'П/фабрикат'.ljust(lw)}</b>{str(int(polu_cur)).rjust(pw)} {str(int(polu_prog)).rjust(pw)}")
-    code_lines.append(f"<b>{'Перегон'.ljust(lw)}</b>{str(int(peregon)).rjust(pw)}")
+
+    # Гранула per-line
+    for i in range(5):
+        cv = int(gc_arr[i]) if gc_arr[i] else 0
+        pv = int(gp_arr[i]) if gp_arr[i] else 0
+        code_lines.append(f"{granula_names[i].ljust(lw)}{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+
+    # Гранула subtotal
+    code_lines.append(f"<b>{'Гранула'.ljust(lw)}</b>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}")
+
+    # Полуфабрикат per-line
+    for i in range(4):
+        cv = int(pc_arr[i]) if pc_arr[i] else 0
+        pv = int(pp_arr[i]) if pp_arr[i] else 0
+        code_lines.append(f"{polu_names[i].ljust(lw)}{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+
+    # Полуфабрикат subtotal
+    code_lines.append(f"<b>{'П/фабрикат'.ljust(lw)}</b>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}")
+
+    # Перегон (только текущее)
+    code_lines.append(f"<b>{'Перегон'.ljust(lw)}</b>{str(peregon).rjust(pw)}")
+
     lines.append("<pre>" + "\n".join(code_lines) + "</pre>")
 
     return "\n".join(lines)

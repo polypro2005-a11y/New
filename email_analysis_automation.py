@@ -424,11 +424,11 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
         sd += l["day"]; sn += l["night"]; st += l["total"]
     # Заголовок
     h = "Линия".ljust(nw) + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
-    pre_lines = [f"<code>{'Линия'.ljust(nw)}</code>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1) + "<code>&lt;/&gt;</code>"]
+    code_lines = [f"<code>{'Линия'.ljust(nw)}</code>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1) + "<code>&lt;/&gt;</code>"]
     for l in granula_lines:
-        pre_lines.append(f"<code>{l['name'].ljust(nw)}</code>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}")
-    pre_lines.append(f"<code>{'ИТОГО'.ljust(nw)}</code>{str(sd).rjust(dw+1)}{str(sn).rjust(nw2_col+1)}{str(st).rjust(tw+1)}")
-    lines.append("<pre>" + "\n".join(pre_lines) + "</pre>")
+        code_lines.append(f"<b>{l['name']}</b> <code>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}</code>")
+    code_lines.append(f"<b>{'ИТОГО'}</b> <code>{str(sd).rjust(dw+1)}{str(sn).rjust(nw2_col+1)}{str(st).rjust(tw+1)}</code>")
+    lines.append("\n".join(code_lines))
     lines.append("")
 
     # ── ПОЛУФАБРИКАТ ──
@@ -444,11 +444,11 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     sd2 = sn2 = st2 = 0
     for l in polu_lines:
         sd2 += l["day"]; sn2 += l["night"]; st2 += l["total"]
-    pre_lines = [f"<code>{'Линия'.ljust(nw)}</code>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1) + "<code>&lt;/&gt;</code>"]
+    code_lines = [f"<code>{'Линия'.ljust(nw)}</code>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1) + "<code>&lt;/&gt;</code>"]
     for l in polu_lines:
-        pre_lines.append(f"<code>{l['name'].ljust(nw)}</code>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}")
-    pre_lines.append(f"<code>{'ИТОГО'.ljust(nw)}</code>{str(sd2).rjust(dw+1)}{str(sn2).rjust(nw2_col+1)}{str(st2).rjust(tw+1)}")
-    lines.append("<pre>" + "\n".join(pre_lines) + "</pre>")
+        code_lines.append(f"<b>{l['name']}</b> <code>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}</code>")
+    code_lines.append(f"<b>{'ИТОГО'}</b> <code>{str(sd2).rjust(dw+1)}{str(sn2).rjust(nw2_col+1)}{str(st2).rjust(tw+1)}</code>")
+    lines.append("\n".join(code_lines))
     lines.append("")
 
     # ── ПРОГНОЗ ──
@@ -490,24 +490,24 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     for i in range(5):
         cv = int(gc_arr[i]) if gc_arr[i] else 0
         pv = int(gp_arr[i]) if gp_arr[i] else 0
-        code_lines.append(f"<code>{granula_names[i].ljust(lw)}</code>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<b>{granula_names[i]}</b> <code>{str(cv).rjust(pw)} {str(pv).rjust(pw)}</code>")
 
     # Гранула subtotal
-    code_lines.append(f"<code>{'Гранула'.ljust(lw)}</code>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}")
+    code_lines.append(f"<b>{'Гранула'}</b> <code>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}</code>")
 
     # Полуфабрикат per-line
     for i in range(4):
         cv = int(pc_arr[i]) if pc_arr[i] else 0
         pv = int(pp_arr[i]) if pp_arr[i] else 0
-        code_lines.append(f"<code>{polu_names[i].ljust(lw)}</code>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<b>{polu_names[i]}</b> <code>{str(cv).rjust(pw)} {str(pv).rjust(pw)}</code>")
 
     # Полуфабрикат subtotal
-    code_lines.append(f"<code>{'П/фабрикат'.ljust(lw)}</code>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}")
+    code_lines.append(f"<b>{'П/фабрикат'}</b> <code>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}</code>")
 
     # Перегон (только текущее)
-    code_lines.append(f"<code>{'Перегон'.ljust(lw)}</code>{str(peregon).rjust(pw)}")
+    code_lines.append(f"<b>{'Перегон'}</b> <code>{str(peregon).rjust(pw)}</code>")
 
-    lines.append("<pre>" + "\n".join(code_lines) + "</pre>")
+    lines.append("\n".join(code_lines))
 
     return "\n".join(lines)
 

@@ -6,11 +6,11 @@
     "imap_port": 993
   },
   "telegram": {
-    "bot_token": "8565482614:AAEpaaNHZWKdaA_kXb0IIutDG68LwEhsjz8",
+    "bot_token": "8632911632:AAFbLdOtAhddeWaUQtY7aNrThLKUxO1VHR8",
     "chat_id": "399206404"
   },
   "search": {
-    "filename_keyword": "анализ",
+    "filename_keyword": "задолженность",
     "file_extensions": [
       ".xlsx",
       ".xls",
@@ -19,12 +19,12 @@
     "max_emails_to_check": 20
   },
   "schedule": {
-    "time": "09:00",
+    "time": "11:00",
     "timezone": "Europe/Moscow"
   },
   "report": {
     "max_rows": 50,
     "include_all_sheets": true,
-    "title": "📊 Ежедневный отчёт из Excel"
+    "title": "📊 Отчёт по задолженности"
   }
 }

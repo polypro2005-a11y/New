@@ -495,6 +495,9 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
 
     # Гранула subtotal
     code_lines.append(f"<code>{'Гранула'.ljust(lw)}</code>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}")
+    # Разделитель
+    sep_w = lw + pw + 1 + pw
+    code_lines.append(f"{'─' * sep_w}")
 
     # Полуфабрикат per-line
     for i in range(4):

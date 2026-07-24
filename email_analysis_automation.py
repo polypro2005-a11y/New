@@ -423,12 +423,12 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     for l in granula_lines:
         sd += l["day"]; sn += l["night"]; st += l["total"]
     # Заголовок
-    h = "<b>" + "Линия".ljust(nw) + "</b>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
-    pre_lines = [f"{h}<code>&lt;/&gt;</code>"]
+    h = "Линия".ljust(nw) + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
+    code_lines = [f"<code>{h}</code><code>&lt;/&gt;</code>"]
     for l in granula_lines:
-        pre_lines.append(f"<b>{l['name'].ljust(nw)}</b>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}")
-    pre_lines.append(f"<b>{'ИТОГО'.ljust(nw)}</b>{str(sd).rjust(dw+1)}{str(sn).rjust(nw2_col+1)}{str(st).rjust(tw+1)}")
-    lines.append("<pre>" + "\n".join(pre_lines) + "</pre>")
+        code_lines.append(f"<code><b>{l['name'].ljust(nw)}</b>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}</code>")
+    code_lines.append(f"<code><b>{'ИТОГО'.ljust(nw)}</b>{str(sd).rjust(dw+1)}{str(sn).rjust(nw2_col+1)}{str(st).rjust(tw+1)}</code>")
+    lines.append("\n".join(code_lines))
     lines.append("")
 
     # ── ПОЛУФАБРИКАТ ──
@@ -444,12 +444,12 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     sd2 = sn2 = st2 = 0
     for l in polu_lines:
         sd2 += l["day"]; sn2 += l["night"]; st2 += l["total"]
-    h = "<b>" + "Линия".ljust(nw) + "</b>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
-    pre_lines = [f"{h}<code>&lt;/&gt;</code>"]
+    h = "Линия".ljust(nw) + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
+    code_lines = [f"<code>{h}</code><code>&lt;/&gt;</code>"]
     for l in polu_lines:
-        pre_lines.append(f"<b>{l['name'].ljust(nw)}</b>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}")
-    pre_lines.append(f"<b>{'ИТОГО'.ljust(nw)}</b>{str(sd2).rjust(dw+1)}{str(sn2).rjust(nw2_col+1)}{str(st2).rjust(tw+1)}")
-    lines.append("<pre>" + "\n".join(pre_lines) + "</pre>")
+        code_lines.append(f"<code><b>{l['name'].ljust(nw)}</b>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}</code>")
+    code_lines.append(f"<code><b>{'ИТОГО'.ljust(nw)}</b>{str(sd2).rjust(dw+1)}{str(sn2).rjust(nw2_col+1)}{str(st2).rjust(tw+1)}</code>")
+    lines.append("\n".join(code_lines))
     lines.append("")
 
     # ── ПРОГНОЗ ──
@@ -485,30 +485,30 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
         pw = 7
 
     code_lines = []
-    code_lines.append(f"<b>{'материал'.ljust(lw)}</b>{'текущее'.rjust(pw)} прогноз<code>&lt;/&gt;</code>")
+    code_lines.append(f"<code>{'материал'.ljust(lw)}{'текущее'.rjust(pw)} прогноз</code><code>&lt;/&gt;</code>")
 
     # Гранула per-line
     for i in range(5):
         cv = int(gc_arr[i]) if gc_arr[i] else 0
         pv = int(gp_arr[i]) if gp_arr[i] else 0
-        code_lines.append(f"<b>{granula_names[i].ljust(lw)}</b>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<code><b>{granula_names[i].ljust(lw)}</b>{str(cv).rjust(pw)} {str(pv).rjust(pw)}</code>")
 
     # Гранула subtotal
-    code_lines.append(f"<b>{'Гранула'.ljust(lw)}</b>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}")
+    code_lines.append(f"<code><b>{'Гранула'.ljust(lw)}</b>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}</code>")
 
     # Полуфабрикат per-line
     for i in range(4):
         cv = int(pc_arr[i]) if pc_arr[i] else 0
         pv = int(pp_arr[i]) if pp_arr[i] else 0
-        code_lines.append(f"<b>{polu_names[i].ljust(lw)}</b>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<code><b>{polu_names[i].ljust(lw)}</b>{str(cv).rjust(pw)} {str(pv).rjust(pw)}</code>")
 
     # Полуфабрикат subtotal
-    code_lines.append(f"<b>{'П/фабрикат'.ljust(lw)}</b>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}")
+    code_lines.append(f"<code><b>{'П/фабрикат'.ljust(lw)}</b>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}</code>")
 
     # Перегон (только текущее)
-    code_lines.append(f"<b>{'Перегон'.ljust(lw)}</b>{str(peregon).rjust(pw)}")
+    code_lines.append(f"<code><b>{'Перегон'.ljust(lw)}</b>{str(peregon).rjust(pw)}</code>")
 
-    lines.append("<pre>" + "\n".join(code_lines) + "</pre>")
+    lines.append("\n".join(code_lines))
 
     return "\n".join(lines)
 

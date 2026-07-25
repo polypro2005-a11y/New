@@ -31,8 +31,8 @@ except ImportError:
     HAS_PYXLSB = False
 
 # ── Lock / State ──
-LOCK_FILE = Path(__file__).parent / ".bot_lock"
-LAST_REPORT_FILE = Path(__file__).parent / ".last_report.txt"
+LOCK_FILE = Path(__file__).parent / ".bot_lock_analysis"
+LAST_REPORT_FILE = Path(__file__).parent / ".last_report_analysis.txt"
 
 def _is_locked():
     if not LOCK_FILE.exists():
@@ -424,10 +424,11 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
         sd += l["day"]; sn += l["night"]; st += l["total"]
     # Заголовок
     h = "Линия".ljust(nw) + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
-    pre_lines = [f"<code>{'Линия'.ljust(nw)}</code>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1) + "<code>&lt;/&gt;</code>"]
+    sep = "─" * (nw + 1 + dw + 1 + nw2_col + 1 + tw)
+    pre_lines = [f"<code>{h}</code>", f"<code>{sep}</code>"]
     for l in granula_lines:
-        pre_lines.append(f"<code>{l['name'].ljust(nw)}</code>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}")
-    pre_lines.append(f"<code>{'ИТОГО'.ljust(nw)}</code>{str(sd).rjust(dw+1)}{str(sn).rjust(nw2_col+1)}{str(st).rjust(tw+1)}")
+        pre_lines.append(f"<code>{l['name'].ljust(nw)} {str(l['day']).rjust(dw)} {str(l['night']).rjust(nw2_col)} {str(l['total']).rjust(tw)}</code>")
+    pre_lines.append(f"<code>{'ИТОГО'.ljust(nw)} {str(sd).rjust(dw)} {str(sn).rjust(nw2_col)} {str(st).rjust(tw)}</code>")
     lines.append("<pre>" + "\n".join(pre_lines) + "</pre>")
     lines.append("")
 
@@ -445,10 +446,11 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     for l in polu_lines:
         sd2 += l["day"]; sn2 += l["night"]; st2 += l["total"]
     h = "Линия".ljust(nw) + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1)
-    pre_lines = [f"<code>{'Линия'.ljust(nw)}</code>" + "день".rjust(dw+1) + "ночь".rjust(nw2_col+1) + "итого".rjust(tw+1) + "<code>&lt;/&gt;</code>"]
+    sep = "─" * (nw + 1 + dw + 1 + nw2_col + 1 + tw)
+    pre_lines = [f"<code>{h}</code>", f"<code>{sep}</code>"]
     for l in polu_lines:
-        pre_lines.append(f"<code>{l['name'].ljust(nw)}</code>{str(l['day']).rjust(dw+1)}{str(l['night']).rjust(nw2_col+1)}{str(l['total']).rjust(tw+1)}")
-    pre_lines.append(f"<code>{'ИТОГО'.ljust(nw)}</code>{str(sd2).rjust(dw+1)}{str(sn2).rjust(nw2_col+1)}{str(st2).rjust(tw+1)}")
+        pre_lines.append(f"<code>{l['name'].ljust(nw)} {str(l['day']).rjust(dw)} {str(l['night']).rjust(nw2_col)} {str(l['total']).rjust(tw)}</code>")
+    pre_lines.append(f"<code>{'ИТОГО'.ljust(nw)} {str(sd2).rjust(dw)} {str(sn2).rjust(nw2_col)} {str(st2).rjust(tw)}</code>")
     lines.append("<pre>" + "\n".join(pre_lines) + "</pre>")
     lines.append("")
 
@@ -485,33 +487,54 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
         pw = 7
 
     code_lines = []
-    code_lines.append(f"<code>{'материал'.ljust(lw)}</code>{'текущее'.rjust(pw)} прогноз<code>&lt;/&gt;</code>")
+    code_lines.append(f"<code>{'материал'.ljust(lw)} {'текущее'.rjust(pw)} {'прогноз'.rjust(pw)}</code>")
 
     # Гранула per-line
     for i in range(5):
         cv = int(gc_arr[i]) if gc_arr[i] else 0
         pv = int(gp_arr[i]) if gp_arr[i] else 0
-        code_lines.append(f"<code>{granula_names[i].ljust(lw)}</code>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<code>{granula_names[i].ljust(lw)} {str(cv).rjust(pw)} {str(pv).rjust(pw)}</code>")
 
     # Гранула subtotal
-    code_lines.append(f"<code>{'Гранула'.ljust(lw)}</code>{str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}")
+    code_lines.append(f"<code>{'Гранула'.ljust(lw)} {str(gc_total).rjust(pw)} {str(gp_total).rjust(pw)}</code>")
     # Разделитель
-    sep_w = lw + pw + 1 + pw
-    code_lines.append(f"{'─' * sep_w}")
+    sep_w = lw + 1 + pw + 1 + pw
+    code_lines.append(f"<code>{'─' * sep_w}</code>")
 
     # Полуфабрикат per-line
     for i in range(4):
         cv = int(pc_arr[i]) if pc_arr[i] else 0
         pv = int(pp_arr[i]) if pp_arr[i] else 0
-        code_lines.append(f"<code>{polu_names[i].ljust(lw)}</code>{str(cv).rjust(pw)} {str(pv).rjust(pw)}")
+        code_lines.append(f"<code>{polu_names[i].ljust(lw)} {str(cv).rjust(pw)} {str(pv).rjust(pw)}</code>")
 
     # Полуфабрикат subtotal
-    code_lines.append(f"<code>{'П/фабрикат'.ljust(lw)}</code>{str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}")
-
+    code_lines.append(f"<code>{'П/фабрикат'.ljust(lw)} {str(pc_total).rjust(pw)} {str(pp_total).rjust(pw)}</code>")
     # Перегон (только текущее)
-    code_lines.append(f"<code>{'Перегон'.ljust(lw)}</code>{str(peregon).rjust(pw)}")
+    code_lines.append(f"<code>{'Перегон'.ljust(lw)} {str(peregon).rjust(pw)}</code>")
 
     lines.append("<pre>" + "\n".join(code_lines) + "</pre>")
+
+    # Выравниваем все <code>-блоки до единой ширины
+    import re as _re
+    _widths = []
+    for _ln in lines:
+        for _m in _re.finditer(r'<code>(.*?)</code>', _ln):
+            _widths.append(len(_m.group(1)))
+    if _widths:
+        _max_w = max(_widths)
+        _new = []
+        for _ln in lines:
+            _matches = list(_re.finditer(r'<code>(.*?)</code>', _ln))
+            if _matches:
+                _result = _ln
+                for _m in reversed(_matches):
+                    _content = _m.group(1)
+                    _padded = _content.ljust(_max_w)
+                    _result = _result[: _m.start()] + f"<code>{_padded}</code>" + _result[_m.end() :]
+                _new.append(_result)
+            else:
+                _new.append(_ln)
+        lines = _new
 
     return "\n".join(lines)
 

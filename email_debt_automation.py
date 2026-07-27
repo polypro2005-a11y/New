@@ -31,8 +31,8 @@ except ImportError:
     HAS_PYXLSB = False
 
 # ── Lock / State ──
-LOCK_FILE = Path(__file__).parent / ".bot_lock"
-LAST_REPORT_FILE = Path(__file__).parent / ".last_report.txt"
+LOCK_FILE = Path(__file__).parent / ".bot_lock_debt"
+LAST_REPORT_FILE = Path(__file__).parent / ".last_report_debt.txt"
 
 def _is_locked():
     if not LOCK_FILE.exists():
@@ -253,6 +253,11 @@ def generate_debt_report(sheets_data):
 
             # Это строка данных
             name = first
+            # Убираем организационно-правовые формы
+            for suffix in [" ООО", " ЗАО", " НАО", " АО", " ПАО"]:
+                if name.upper().endswith(suffix):
+                    name = name[:-len(suffix)].strip()
+                    break
             if not name:
                 continue
 

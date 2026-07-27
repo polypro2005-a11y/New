@@ -14,8 +14,8 @@ try:
 except ImportError:
     HAS_PYXLSB = False
 
-LOCK_FILE = Path(__file__).parent / ".bot_lock"
-LAST_REPORT_FILE = Path(__file__).parent / ".last_report.txt"
+LOCK_FILE = Path(__file__).parent / ".bot_lock_provodki"
+LAST_REPORT_FILE = Path(__file__).parent / ".last_report_provodki.txt"
 CONFIG_PATH = Path(__file__).parent / "email_provodki_config.json"
 
 def _is_locked():
@@ -251,44 +251,63 @@ def generate_report(sheets_data):
         all_lines.append(f"💸 Расход: {fmt_num(total_spis)}")
         if real_balance is not None:
             all_lines.append(f"🏦 Остаток на р/с: {fmt_num(real_balance)}")
-        all_lines.append("")
         
-        pre = []
-        
+        # ── Детализация ──
+        code_rows = []
+        sep_line = "─" * (max_nn + 1 + max_nw)
         # ПРИХОД
         if post_by_contr:
+            code_rows.append(f"<code>ПРИХОД{'': >{(max_nn + 1 + max_nw) - 6}}</code>")
+            code_rows.append(f"<code>{sep_line}</code>")
             sp = sorted(post_by_contr.items(), key=lambda x: x[1], reverse=True)
-            pre.append("ПРИХОД")
-            pre.append(sep)
             for c, v in sp:
                 cs = short_name(c, max_nn)[:max_nn]
-                pre.append(f"{cs} {fmt_num(v).rjust(max_nw)}")
-            pre.append(sep)
-            pre.append(f"{'ИТОГО'.ljust(max_nn)} {fmt_num(total_post).rjust(max_nw)}")
-            pre.append(sep)
-        
+                code_rows.append(f"<code>{cs} {fmt_num(v).rjust(max_nw)}</code>")
+            code_rows.append(f"<code>{sep_line}</code>")
+            code_rows.append(f"<code>{'ИТОГО'.ljust(max_nn)} {fmt_num(total_post).rjust(max_nw)}</code>")
         # РАСХОД
         if spis_by_cat:
-            pre.append("РАСХОД")
-            pre.append(sep)
-            cat_priority = {"сырье": 0, "транспорт": 1, "прочие": 2}
+            code_rows.append(f"<code>РАСХОД{'': >{(max_nn + 1 + max_nw) - 6}}</code>")
+            code_rows.append(f"<code>{sep_line}</code>")
+            cat_priority = {"сырье": 0, "транспорт": 1, "прочие": 2, "налоги": 3}
             sc = sorted(spis_by_cat.items(), key=lambda x: (cat_priority.get(x[0], 99), x[0]))
             for cat, cd in sc:
-                ct = sum(cd.values())
                 sc2 = sorted(cd.items(), key=lambda x: x[1], reverse=True)
-                pre.append(f"{cat.capitalize()}")
+                code_rows.append(f"<code>{cat.capitalize().ljust(max_nn)} {fmt_num(sum(cd.values())).rjust(max_nw)}</code>")
                 for c, v in sc2:
                     cs = short_name(c, max_nn)[:max_nn]
-                    pre.append(f"{cs} {fmt_num(v).rjust(max_nw)}")
-                pre.append(sep)
-                pre.append(f"{'ИТОГО'.ljust(max_nn)} {fmt_num(ct).rjust(max_nw)}")
-                pre.append(sep)
+                    code_rows.append(f"<code>{cs} {fmt_num(v).rjust(max_nw)}</code>")
+            code_rows.append(f"<code>{sep_line}</code>")
+            code_rows.append(f"<code>{'ИТОГО'.ljust(max_nn)} {fmt_num(total_spis).rjust(max_nw)}</code>")
+        if code_rows:
+            all_lines.append("<pre>" + "\n".join(code_rows) + "</pre>")
         
-        if pre:
-            all_lines.append("<pre>" + "\n".join(pre) + "</pre>")
+        all_lines.append("")
     
     if len(all_lines) <= 2:
         all_lines.append("📭 Нет данных за последнюю дату.")
+    # Выравниваем все <code>-блоки до единой ширины
+    import re as _re
+    _widths = []
+    for _ln in all_lines:
+        for _m in _re.finditer(r'<code>(.*?)</code>', _ln):
+            _widths.append(len(_m.group(1)))
+    if _widths:
+        _max_w = max(_widths)
+        _new = []
+        for _ln in all_lines:
+            _matches = list(_re.finditer(r'<code>(.*?)</code>', _ln))
+            if _matches:
+                _result = _ln
+                for _m in reversed(_matches):
+                    _content = _m.group(1)
+                    _padded = _content.ljust(_max_w)
+                    _result = _result[: _m.start()] + f"<code>{_padded}</code>" + _result[_m.end() :]
+                _new.append(_result)
+            else:
+                _new.append(_ln)
+        all_lines = _new
+
     return "\n".join(all_lines)
 
 # ── Telegram ──

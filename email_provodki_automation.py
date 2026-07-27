@@ -269,11 +269,10 @@ def generate_report(sheets_data):
         if spis_by_cat:
             code_rows.append(f"<code>РАСХОД{'': >{(max_nn + 1 + max_nw) - 6}}</code>")
             code_rows.append(f"<code>{sep_line}</code>")
-            cat_priority = {"сырье": 0, "транспорт": 1, "прочие": 2, "налоги": 3}
-            sc = sorted(spis_by_cat.items(), key=lambda x: (cat_priority.get(x[0], 99), x[0]))
+            sc = sorted(spis_by_cat.items(), key=lambda x: sum(x[1].values()), reverse=True)
             for cat, cd in sc:
                 sc2 = sorted(cd.items(), key=lambda x: x[1], reverse=True)
-                code_rows.append(f"<code>{cat.capitalize().ljust(max_nn)} {fmt_num(sum(cd.values())).rjust(max_nw)}</code>")
+                code_rows.append(f"<code><b>{cat.capitalize().ljust(max_nn)}</b> {fmt_num(sum(cd.values())).rjust(max_nw)}</code>")
                 for c, v in sc2:
                     cs = short_name(c, max_nn)[:max_nn]
                     code_rows.append(f"<code>{cs} {fmt_num(v).rjust(max_nw)}</code>")
@@ -288,10 +287,13 @@ def generate_report(sheets_data):
         all_lines.append("📭 Нет данных за последнюю дату.")
     # Выравниваем все <code>-блоки до единой ширины
     import re as _re
+    def _visible_len(s):
+        """Длина текста без HTML-тегов"""
+        return len(_re.sub(r'<[^>]+>', '', s))
     _widths = []
     for _ln in all_lines:
         for _m in _re.finditer(r'<code>(.*?)</code>', _ln):
-            _widths.append(len(_m.group(1)))
+            _widths.append(_visible_len(_m.group(1)))
     if _widths:
         _max_w = max(_widths)
         _new = []
@@ -301,8 +303,14 @@ def generate_report(sheets_data):
                 _result = _ln
                 for _m in reversed(_matches):
                     _content = _m.group(1)
-                    _padded = _content.ljust(_max_w)
-                    _result = _result[: _m.start()] + f"<code>{_padded}</code>" + _result[_m.end() :]
+                    _visible = _visible_len(_content)
+                    _need = _max_w - _visible
+                    if _need > 0:
+                        # Вставляем пробелы перед закрывающим </code>
+                        _padded = _content[:len(_content)] + " " * _need
+                        _result = _result[: _m.start()] + f"<code>{_padded}</code>" + _result[_m.end() :]
+                    else:
+                        _result = _result[: _m.start()] + f"<code>{_content}</code>" + _result[_m.end() :]
                 _new.append(_result)
             else:
                 _new.append(_ln)

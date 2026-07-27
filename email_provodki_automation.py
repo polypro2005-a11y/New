@@ -143,38 +143,68 @@ def short_name(name, max_len=18):
 
 # ── Генерация отчёта ──
 def generate_report(sheets_data):
-    """Генерирует отчёт: по каждому юрлицу за его крайнюю дату."""
+    """Генерирует отчёт ДДС по каждому юрлицу за его крайнюю дату."""
     from datetime import datetime as dt
     wd = ["пн","вт","ср","чт","пт","сб","вс"]
-    
-    # Первый проход: глобальные ширины
-    max_nw, max_nn = 6, 10
-    for sk in ["дпл","трио","тдп","ип пох"]:
+
+    CAT_EMOJI = {
+        "сырьё": "🧬", "сырье": "🧬",
+        "транспорт": "🚚",
+        "зп": "👥", "зарплата": "👥",
+        "коммунальные": "💧",
+        "налог": "🧾", "налоги": "🧾",
+        "аренда": "🏢",
+        "кредит": "🏦", "кредиты": "🏦",
+        "карта": "💳",
+        "обучение": "📚",
+        "свет": "⚡",
+        "прочие": "📌", "прочее": "📌",
+    }
+
+    def short_name_short(n, max_len=13):
+        n = n.strip()
+        if not n: return ""
+        KNOWN = {
+            "ПАО СБЕРБАНК": "Сбербанк",
+            "БАНК ВТБ (ПАО) г. Москва": "ВТБ",
+            "БАНК ГПБ (АО), г.Москва": "ГПБ",
+            "МИ ФНС России по управлению долгом": "ФНС",
+            "УФК по Калужской области (ОСФР по Калужской области)": "УФК",
+            "УФК по Калужской области (УМВД России": "УФК",
+            "УФССП РОССИИ ПО КАЛУЖСКОЙ ОБЛАСТИ": "ФССП",
+            "Газпром газораспределение Калуга": "Газпром",
+            "Газпром межрегионгаз Калуга": "Газпром",
+            "Калугаоблводоканал": "Водоканал",
+        }
+        if n in KNOWN: return KNOWN[n][:max_len]
+        for key, val in KNOWN.items():
+            if key in n or n in key: return val[:max_len]
+        for suffix in [" ООО", " ЗАО", " НАО", " АО", " ПАО"]:
+            if n.upper().endswith(suffix):
+                n = n[:-len(suffix)].strip()
+                break
+        for prefix in ['ООО "', 'ЗАО "', 'НАО "', 'АО "']:
+            if n.startswith(prefix):
+                n = n[len(prefix):]
+                if n.endswith('"'): n = n[:-1]
+        n = " ".join(n.split()).strip()
+        if len(n) <= max_len: return n
+        words = n.split()
+        important = [w for w in words if w.upper() == w and len(w) > 2]
+        if important:
+            result = " ".join(important)
+            if len(result) <= max_len: return result
+        return n[:max_len-1] + "…"
+
+    all_lines = ["📊 ОТЧЁТ ДДС", ""]
+    sep = "━" * 30
+    total_rs_all = 0.0
+    total_card_all = 0.0
+
+    for sk, cp_name in [("дпл","ДПЛ Полимер"), ("трио","Триопласт"), ("тдп","ТДП"), ("ип пох","ИП Пох")]:
         rows = sheets_data.get(sk, [])
         if not rows: continue
-        for row in rows:
-            if not row or not row[0]: continue
-            d = str(row[0]).strip()
-            if len(d) != 10 or d[2] != '.' or d[5] != '.': continue
-            if len(row) > 1 and row[1]:
-                sn = short_name(str(row[1]), 18).strip()
-                if len(sn) > max_nn: max_nn = len(sn)
-            for c in [6,7,8,9,10,11]:
-                try:
-                    if len(row) > c and row[c]:
-                        fl = len(fmt_num(row[c]))
-                        if fl > max_nw: max_nw = fl
-                except: pass
-    max_nn = min(max_nn, 18)
-    
-    sep = "─" * (max_nn + 1 + max_nw)
-    all_lines = ["📋 ПРОВОДКИ БАНКОВСКИЕ", ""]
-    
-    for sk, cp_name in [("дпл","ДПЛ"), ("трио","ТриоПласт"), ("тдп","Торговый дом полимер"), ("ип пох","ИП Похоменко")]:
-        rows = sheets_data.get(sk, [])
-        if not rows: continue
-        
-        # Крайняя дата
+
         last_date = None
         for row in rows:
             if not row or not row[0]: continue
@@ -186,33 +216,29 @@ def generate_report(sheets_data):
                 except: pass
         if last_date is None: continue
         ds = last_date.strftime("%d.%m.%Y")
-        
-        # Сбор данных за крайнюю дату
-        ostatok = 0
+
+        ostatok_rs = 0
+        ostatok_card = 0
         for row in rows:
             if row and len(row) > 6 and row[4] and "остаток на начало" in str(row[4]).lower():
-                try: ostatok = float(str(row[6]))
+                try: ostatok_rs = float(str(row[6]))
+                except: pass
+                try: ostatok_card = float(str(row[8])) if len(row) > 8 and row[8] else 0
                 except: pass
                 break
-        
+
         post_by_contr = {}
         spis_by_cat = {}
         total_post = 0.0
         total_spis = 0.0
-        
+
         for row in rows:
             if not row or not row[0]: continue
             if str(row[0]).strip() != ds: continue
-            
             contr = str(row[1]).strip() if len(row) > 1 and row[1] else ""
             cat = str(row[4]).strip() if len(row) > 4 and row[4] else "прочие"
             if not cat or cat.lower() in ("статьи затрат","остаток на начало",""): cat = "прочие"
             if not contr: contr = "(без названия)"
-            
-            post = sum(float(str(row[c])) for c in [6,8,10] if len(row) > c and row[c]) if any(len(row) > c and row[c] for c in [6,8,10]) else 0.0
-            spis = sum(float(str(row[c])) for c in [7,9,11] if len(row) > c and row[c]) if any(len(row) > c and row[c] for c in [7,9,11]) else 0.0
-            
-            # FIX: calculate properly
             post = 0.0; spis = 0.0
             for c in [6,8,10]:
                 try:
@@ -222,7 +248,6 @@ def generate_report(sheets_data):
                 try:
                     if len(row) > c and row[c]: spis += float(str(row[c]))
                 except: pass
-            
             total_post += post; total_spis += spis
             if post > 0:
                 if contr not in post_by_contr: post_by_contr[contr] = 0.0
@@ -231,10 +256,11 @@ def generate_report(sheets_data):
                 if cat not in spis_by_cat: spis_by_cat[cat] = {}
                 if contr not in spis_by_cat[cat]: spis_by_cat[cat][contr] = 0.0
                 spis_by_cat[cat][contr] += spis
-        
+
         if total_post == 0 and total_spis == 0: continue
-        
+
         real_balance = None
+        card_balance = None
         itog_rows = sheets_data.get("итог", [])
         for row in itog_rows:
             if row and row[0] and str(row[0]).strip().lower() == sk:
@@ -243,79 +269,70 @@ def generate_report(sheets_data):
                 if len(row) > 6 and row[6]:
                     try: real_balance += float(str(row[6]))
                     except: pass
+                try: card_balance = float(str(row[3])) if len(row) > 3 and row[3] else 0
+                except: pass
+                if len(row) > 8 and row[8]:
+                    try: card_balance += float(str(row[8]))
+                    except: pass
                 break
-        
-        all_lines.append(f"🏭 {cp_name}")
-        all_lines.append(f"📅 {ds} ({wd[last_date.weekday()]})")
-        all_lines.append(f"💰 Приход: {fmt_num(total_post)}")
-        all_lines.append(f"💸 Расход: {fmt_num(total_spis)}")
-        if real_balance is not None:
-            all_lines.append(f"🏦 Остаток на р/с: {fmt_num(real_balance)}")
-        
-        # ── Детализация ──
-        code_rows = []
-        sep_line = "─" * (max_nn + 1 + max_nw)
-        # ПРИХОД
+
+        if real_balance is None:
+            real_balance = ostatok_rs + total_post - total_spis
+
+        all_lines.append(sep)
+        all_lines.append(f"{cp_name} · {ds}")
+        rs_show = int(real_balance) if real_balance else 0
+        card_show = int(card_balance) if card_balance else 0
+        total_rs_all += rs_show if rs_show > 0 else 0
+        total_card_all += card_show if card_show > 0 else 0
+        all_lines.append(f"🟢 {fmt_num(total_post)}   🔴 {fmt_num(total_spis)}")
+        card_part = f" · 💳 карта: {fmt_num(card_show)}₽" if card_show else ""
+        all_lines.append(f"💼 р/с: {fmt_num(rs_show)}₽{card_part}")
+        all_lines.append("")
+
+        # Ширина для чисел
+        max_nw = 8
+        all_vals = [v for n, v in post_by_contr.items()] + [v for cat in spis_by_cat.values() for c, v in cat.items()] + [total_post, total_spis]
+        for v in all_vals:
+            lv = len(fmt_num(v))
+            if lv > max_nw: max_nw = lv
+
+        # ПРИХОДЫ
         if post_by_contr:
-            code_rows.append(f"<code>ПРИХОД{'': >{(max_nn + 1 + max_nw) - 6}}</code>")
-            code_rows.append(f"<code>{sep_line}</code>")
+            all_lines.append("🟢 Приходы:")
             sp = sorted(post_by_contr.items(), key=lambda x: x[1], reverse=True)
-            for c, v in sp:
-                cs = short_name(c, max_nn)[:max_nn]
-                code_rows.append(f"<code>{cs} {fmt_num(v).rjust(max_nw)}</code>")
-            code_rows.append(f"<code>{sep_line}</code>")
-            code_rows.append(f"<code>{'ИТОГО'.ljust(max_nn)} {fmt_num(total_post).rjust(max_nw)}</code>")
-        # РАСХОД
+            pre = []
+            for i, (c, v) in enumerate(sp, 1):
+                cs = short_name_short(c, 13)
+                pre.append(f"{i}. {cs:<13} {fmt_num(v).rjust(max_nw)}")
+            all_lines.append("<pre>" + "\n".join(pre) + "</pre>")
+            all_lines.append("")
+
+        # РАСХОДЫ
         if spis_by_cat:
-            code_rows.append(f"<code>РАСХОД{'': >{(max_nn + 1 + max_nw) - 6}}</code>")
-            code_rows.append(f"<code>{sep_line}</code>")
+            all_lines.append("🔴 Расходы:")
             sc = sorted(spis_by_cat.items(), key=lambda x: sum(x[1].values()), reverse=True)
             for cat, cd in sc:
+                ct = int(sum(cd.values()))
+                pct = ct / total_spis * 100 if total_spis else 0
+                emoji = CAT_EMOJI.get(cat.lower(), "📌")
+                all_lines.append(f"{emoji} {cat.capitalize()} — {fmt_num(ct)} ({pct:.1f}%)")
+                pre = []
                 sc2 = sorted(cd.items(), key=lambda x: x[1], reverse=True)
-                code_rows.append(f"<code><b>{cat.capitalize().ljust(max_nn)}</b> {fmt_num(sum(cd.values())).rjust(max_nw)}</code>")
-                for c, v in sc2:
-                    cs = short_name(c, max_nn)[:max_nn]
-                    code_rows.append(f"<code>{cs} {fmt_num(v).rjust(max_nw)}</code>")
-            code_rows.append(f"<code>{sep_line}</code>")
-            code_rows.append(f"<code>{'ИТОГО'.ljust(max_nn)} {fmt_num(total_spis).rjust(max_nw)}</code>")
-        if code_rows:
-            all_lines.append("<pre>" + "\n".join(code_rows) + "</pre>")
-        
-        all_lines.append("")
-    
-    if len(all_lines) <= 2:
-        all_lines.append("📭 Нет данных за последнюю дату.")
-    # Выравниваем все <code>-блоки до единой ширины
-    import re as _re
-    def _visible_len(s):
-        """Длина текста без HTML-тегов"""
-        return len(_re.sub(r'<[^>]+>', '', s))
-    _widths = []
-    for _ln in all_lines:
-        for _m in _re.finditer(r'<code>(.*?)</code>', _ln):
-            _widths.append(_visible_len(_m.group(1)))
-    if _widths:
-        _max_w = max(_widths)
-        _new = []
-        for _ln in all_lines:
-            _matches = list(_re.finditer(r'<code>(.*?)</code>', _ln))
-            if _matches:
-                _result = _ln
-                for _m in reversed(_matches):
-                    _content = _m.group(1)
-                    _visible = _visible_len(_content)
-                    _need = _max_w - _visible
-                    if _need > 0:
-                        # Вставляем пробелы перед закрывающим </code>
-                        _padded = _content[:len(_content)] + " " * _need
-                        _result = _result[: _m.start()] + f"<code>{_padded}</code>" + _result[_m.end() :]
-                    else:
-                        _result = _result[: _m.start()] + f"<code>{_content}</code>" + _result[_m.end() :]
-                _new.append(_result)
-            else:
-                _new.append(_ln)
-        all_lines = _new
+                for i, (c, v) in enumerate(sc2, 1):
+                    cs = short_name_short(c, 13)
+                    pre.append(f"{i}. {cs:<13} {fmt_num(v).rjust(max_nw)}")
+                if pre:
+                    all_lines.append("<pre>" + "\n".join(pre) + "</pre>")
+            all_lines.append("")
 
+    # ИТОГО
+    all_lines.append(sep)
+    card_part_all = f" · 💳 карта: {fmt_num(total_card_all)}₽" if total_card_all else ""
+    all_lines.append(f"💼 ИТОГО р/с: {fmt_num(total_rs_all)}₽{card_part_all}")
+
+    if len(all_lines) <= 3:
+        all_lines.append("📭 Нет данных.")
     return "\n".join(all_lines)
 
 # ── Telegram ──

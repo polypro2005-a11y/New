@@ -1,0 +1,60 @@
+{
+  "handoffs": [
+    {
+      "number": 1,
+      "session_id": "28225bf22f05",
+      "display_name": "Проанализируй все наши автоматизации, эт",
+      "message_count": 626,
+      "file": "handoff-1.md",
+      "created_at": "2026-07-28T13:03:15.222789"
+    },
+    {
+      "number": 2,
+      "session_id": "e1087a395626",
+      "display_name": "Проверь эту информацию и подключись",
+      "message_count": 569,
+      "file": "handoff-2.md",
+      "created_at": "2026-07-28T13:03:15.223824"
+    },
+    {
+      "number": 3,
+      "session_id": "9274cbadae37",
+      "display_name": "Создай автоматизацию, которая будет сост",
+      "message_count": 559,
+      "file": "handoff-3.md",
+      "created_at": "2026-07-28T13:03:15.226914"
+    },
+    {
+      "number": 4,
+      "session_id": "b12f054ac3af",
+      "display_name": "Нужно сделать новую автоматизацию провод",
+      "message_count": 445,
+      "file": "handoff-4.md",
+      "created_at": "2026-07-28T13:03:15.227994"
+    },
+    {
+      "number": 5,
+      "session_id": "1f6041f5953e",
+      "display_name": "Мы с тобой сделали автоматизацию, в чате",
+      "message_count": 415,
+      "file": "handoff-5.md",
+      "created_at": "2026-07-28T13:03:15.229030"
+    },
+    {
+      "number": 6,
+      "session_id": "2c4ebdd56c9a",
+      "display_name": "Я задал тебе вопрос сколько токенов мы т",
+      "message_count": 153,
+      "file": "handoff-6.md",
+      "created_at": "2026-07-28T13:03:15.229563"
+    },
+    {
+      "number": 7,
+      "session_id": "fcad3e00cb97",
+      "display_name": "Схема работы у тебя такая?\n\n[Attached fi",
+      "message_count": 110,
+      "file": "handoff-7.md",
+      "created_at": "2026-07-28T13:03:15.230080"
+    }
+  ]
+}

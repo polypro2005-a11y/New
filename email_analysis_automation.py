@@ -351,7 +351,7 @@ def get_kg_col_for_sheet(name):
 
 def get_kg_col_for_polu(name):
     """Возвращает индекс колонки кг для полуфабриката."""
-    if name == "мойка Т":
+    if name == "Мойка Т":
         return 7
     return 4  # Ш-1, Ш-2, мойка Н
 
@@ -388,7 +388,7 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
 
     # ── ПОЛУФАБРИКАТ ──
     polu_lines = []
-    for name in ["Ш-1", "Ш-2", "мойка Н", "мойка Т"]:
+    for name in ["Ш-1", "Ш-2", "Мойка Н", "Мойка Т"]:
         rows = sheets_data.get(name, [])
         if not rows:
             continue
@@ -458,7 +458,7 @@ def generate_report_for_date(sheets_data, target_date_serial, forecast_data, she
     lines.append("📊 <b>ПРОГНОЗ НА МЕСЯЦ</b>")
     # 「Полуфабрикат」(12) сокращаю до「П/фабрикат」(10) чтобы влезть в 25 символов
     granula_names = ["Э-1", "Э-2", "Э-3", "Э-4", "Э-5"]
-    polu_names = ["Ш-1", "Ш-2", "мойка Н", "мойка Т"]
+    polu_names = ["Ш-1", "Ш-2", "Мойка Н", "Мойка Т"]
 
     # Totals
     gc_total = int(sum(gc_arr))
@@ -784,7 +784,8 @@ def _handle_check_now(config, bot_token, chat_id):
                                 rows = []
                                 for row in sheet.rows():
                                     rows.append([c.v for c in row])
-                                sheets_data[sheet_name] = rows
+                                key = sheet_name.title() if sheet_name[0].islower() else sheet_name
+                                sheets_data[key] = rows
                         except:
                             pass
             else:
@@ -793,7 +794,8 @@ def _handle_check_now(config, bot_token, chat_id):
                     try:
                         df = pd.read_excel(xls, sheet_name=sheet_name,
                                            dtype=str, header=None)
-                        sheets_data[sheet_name] = df.fillna("").values.tolist()
+                        key = sheet_name.title() if sheet_name[0].islower() else sheet_name
+                        sheets_data[key] = df.fillna("").values.tolist()
                     except:
                         pass
 
@@ -925,7 +927,7 @@ def main():
                             rows = []
                             for row in sheet.rows():
                                 rows.append([c.v for c in row])
-                            sheets_data[sheet_name] = rows
+                            sheets_data[sheet_name.title() if sheet_name[0].islower() else sheet_name] = rows
                     except:
                         pass
         else:
@@ -933,7 +935,7 @@ def main():
             for sheet_name in xls.sheet_names:
                 try:
                     df = pd.read_excel(xls, sheet_name=sheet_name, dtype=str, header=None)
-                    sheets_data[sheet_name] = df.fillna("").values.tolist()
+                    sheets_data[sheet_name.title() if sheet_name[0].islower() else sheet_name] = df.fillna("").values.tolist()
                 except:
                     pass
 

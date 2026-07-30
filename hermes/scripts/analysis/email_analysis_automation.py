@@ -276,7 +276,7 @@ def find_total_row(rows, kg_col, title_keywords):
 
 def extract_forecast(sheets_data):
     """Извлекает данные прогноза по каждой единице (per-column)."""
-    прогноз_rows = sheets_data.get("прогноз", [])
+    прогноз_rows = sheets_data.get("прогноз", []) or sheets_data.get("Прогноз", [])
 
     granula_cur = [0.0] * 5
     granula_prog = [0.0] * 5
@@ -784,7 +784,8 @@ def _handle_check_now(config, bot_token, chat_id):
                                 rows = []
                                 for row in sheet.rows():
                                     rows.append([c.v for c in row])
-                                sheets_data[sheet_name] = rows
+                                key = sheet_name.title() if sheet_name[0].islower() else sheet_name
+                                sheets_data[key] = rows
                         except:
                             pass
             else:
@@ -793,7 +794,8 @@ def _handle_check_now(config, bot_token, chat_id):
                     try:
                         df = pd.read_excel(xls, sheet_name=sheet_name,
                                            dtype=str, header=None)
-                        sheets_data[sheet_name] = df.fillna("").values.tolist()
+                        key = sheet_name.title() if sheet_name[0].islower() else sheet_name
+                        sheets_data[key] = df.fillna("").values.tolist()
                     except:
                         pass
 
@@ -925,7 +927,7 @@ def main():
                             rows = []
                             for row in sheet.rows():
                                 rows.append([c.v for c in row])
-                            sheets_data[sheet_name] = rows
+                            sheets_data[sheet_name.title() if sheet_name[0].islower() else sheet_name] = rows
                     except:
                         pass
         else:
@@ -933,7 +935,7 @@ def main():
             for sheet_name in xls.sheet_names:
                 try:
                     df = pd.read_excel(xls, sheet_name=sheet_name, dtype=str, header=None)
-                    sheets_data[sheet_name] = df.fillna("").values.tolist()
+                    sheets_data[sheet_name.title() if sheet_name[0].islower() else sheet_name] = df.fillna("").values.tolist()
                 except:
                     pass
 

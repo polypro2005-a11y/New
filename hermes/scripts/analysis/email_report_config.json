@@ -1,12 +1,12 @@
 {
   "gmail": {
     "email": "polypro2005@gmail.com",
-    "app_password": "ekhl kyhv kzcj tuzd",
+    "app_password": "ykkt qozd hrjt frsy",
     "imap_server": "imap.gmail.com",
     "imap_port": 993
   },
   "telegram": {
-    "bot_token": "8565482614:AAEpaaNHZWKdaA_kXb0IIutDG68LwEhsjz8",
+    "bot_token": "8565482614:YOUR_TOKEN_HERE",
     "chat_id": "399206404"
   },
   "search": {
@@ -20,11 +20,9 @@
   },
   "schedule": {
     "time": "11:00",
-    "timezone": "Europe/Moscow"
-  },
-  "report": {
-    "max_rows": 50,
-    "include_all_sheets": true,
-    "title": "📊 Ежедневный отчёт из Excel"
+    "timezone": "Europe/Moscow",
+    "weekdays_only": true,
+    "monday_3days": true,
+    "monday_days_back": 3
   }
 }

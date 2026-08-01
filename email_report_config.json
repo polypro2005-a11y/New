@@ -1,13 +1,13 @@
 {
   "gmail": {
     "email": "polypro2005@gmail.com",
-    "app_password": "ВСТАВЬТЕ_ПАРОЛЬ_ПРИЛОЖЕНИЯ_GMAIL",
+    "app_password": "ekhl kyhv kzcj tuzd",
     "imap_server": "imap.gmail.com",
     "imap_port": 993
   },
   "telegram": {
-    "bot_token": "ВСТАВЬТЕ_TOKEN_TELEGRAM_BOT",
-    "chat_id": "ВСТАВЬТЕ_CHAT_ID",
+    "bot_token": "8565482614:YOUR_TOKEN_HERE",
+    "chat_id": "399206404",
     "telegram_user_id": ""
   },
   "search": {
